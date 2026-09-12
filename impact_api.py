@@ -549,3 +549,37 @@ def root():
         "message": "Predictive Impact API is running",
         "endpoint": "POST /predict-impact/{issue_id}"
     }
+
+@app.get("/solution-source-issue/{solution_id}")
+def get_source_issue_id(solution_id: str):
+    try:
+        response = (
+            supabase
+            .table("proposed_solutions")
+            .select("id, source_issue_id")
+            .eq("id", solution_id)
+            .limit(1)
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(
+                status_code=404,
+                detail="Solution not found"
+            )
+
+        solution = response.data[0]
+
+        return {
+            "solution_id": solution["id"],
+            "source_issue_id": solution["source_issue_id"]
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
